@@ -5,7 +5,7 @@
     <ul>
         {% for listing in listings %}
             <li>
-                <h2> {{listing.title}} </h2>
+                <h2> <a href="/listings/{{listing.id}}">{{listing.title}}</a> </h2>
                 <h5> {{listing.category}} </h5>
                 <h5> {{listing.current_price}} </h5>
                 <img src="{{listing.image_url}}">

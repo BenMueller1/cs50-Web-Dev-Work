@@ -96,3 +96,27 @@ def create_listing_view(request):
     else:
         form = CreateListingForm()
         return render(request, "auctions/create_listing.html", {'form': form})
+
+    
+def listing(request, listing_id):
+    user = request.user
+    listing = Listing.objects.get(id=listing_id)
+    if listing in user.items_in_watchlist.all():
+        in_watchlist = True
+    else:
+        in_watchlist = False
+    return render(request, "auctions/listing.html", {"listing":listing, "in_watchlist":in_watchlist})
+
+
+def add_listing_to_watchlist(request, listing_id):
+    user = request.user
+    listing = Listing.objects.get(id=listing_id)
+    user.items_in_watchlist.add(listing)
+    return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))
+
+
+def remove_listing_from_watchlist(request, listing_id):
+    user = request.user
+    listing = Listing.objects.get(id=listing_id)
+    user.items_in_watchlist.remove(listing)
+    return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))

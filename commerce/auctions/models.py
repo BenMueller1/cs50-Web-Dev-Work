@@ -3,11 +3,6 @@ from django.db import models
 
 from datetime import datetime
 
-class User(AbstractUser):
-    ''' since this inherits from AbstractUser, it already has field for username, email, password, etc.'''
-    # TODO add a watchlist
-    pass
-
 class Listing(models.Model):
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=1000)
@@ -15,6 +10,11 @@ class Listing(models.Model):
     active = models.BooleanField(default=True)
     image_url = models.URLField(default=None)  # should this be a FilePathField ?
     category = models.CharField(max_length=30, default=None)
+
+class User(AbstractUser):
+    ''' since this inherits from AbstractUser, it already has field for username, email, password, etc.'''
+    items_in_watchlist = models.ManyToManyField(Listing, blank=True)
+    pass
 
 
 class Bid(models.Model):
