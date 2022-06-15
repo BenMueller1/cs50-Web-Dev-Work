@@ -10,9 +10,9 @@ class User(AbstractUser):
 
 class Listing(models.Model):
     title = models.CharField(max_length=128)
-    description = models.TextField()
+    description = models.TextField(max_length=1000)
     current_price = models.FloatField()
-    active = models.BooleanField()
+    active = models.BooleanField(default=True)
     image_url = models.URLField(default=None)  # should this be a FilePathField ?
     category = models.CharField(max_length=30, default=None)
 

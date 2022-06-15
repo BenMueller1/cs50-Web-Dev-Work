@@ -3,8 +3,17 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django import forms
 
-from .models import User
+from .models import User, Listing, Bid, Comment
+
+
+class CreateListingForm(forms.Form):
+    title = forms.CharField(max_length=128)
+    description = forms.CharField(max_length=1000)
+    starting_bid = forms.FloatField(min_value=0.01)
+    image_url = forms.URLField(required=False)
+    category = forms.CharField(required=False)
 
 
 def index(request):
@@ -61,3 +70,28 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+
+def create_listing_view(request):
+    if request.method == "POST":
+        print("got post request")
+        # get data from form and add to listings
+        #title, description, starting_bid, image_url, category
+        title = request.POST["title"]
+        description = request.POST["description"]
+        starting_bid = request.POST["starting_bid"]
+        if "image_url" in request.POST.keys():
+            image_url = request.POST['image_url']
+        else:
+            image_url = None
+        if "category" in request.POST.keys():
+            category = request.POST["category"]
+        else:
+            category = None
+
+        new_listing = Listing(title=title, description=description, current_price=starting_bid, image_url=image_url, category=category, active=True)
+        new_listing.save()
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        form = CreateListingForm()
+        return render(request, "auctions/create_listing.html", {'form': form})
