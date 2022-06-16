@@ -80,7 +80,8 @@ def create_listing_view(request):
         #title, description, starting_bid, image_url, category
         title = request.POST["title"]
         description = request.POST["description"]
-        starting_bid = request.POST["starting_bid"]
+        starting_bid = Bid(amount=request.POST["starting_bid"], user=request.user)
+        starting_bid.save()
         if "image_url" in request.POST.keys():
             image_url = request.POST['image_url']
         else:
@@ -90,7 +91,7 @@ def create_listing_view(request):
         else:
             category = None
 
-        new_listing = Listing(title=title, description=description, current_price=starting_bid, image_url=image_url, category=category, active=True)
+        new_listing = Listing(title=title, description=description, current_bid=starting_bid, image_url=image_url, category=category, active=True)
         new_listing.save()
         return HttpResponseRedirect(reverse("index"))
     else:
@@ -105,7 +106,7 @@ def listing(request, listing_id):
         in_watchlist = True
     else:
         in_watchlist = False
-    return render(request, "auctions/listing.html", {"listing":listing, "in_watchlist":in_watchlist})
+    return render(request, "auctions/listing.html", {"listing":listing, "in_watchlist":in_watchlist, "user":user})
 
 
 def add_listing_to_watchlist(request, listing_id):
@@ -119,4 +120,18 @@ def remove_listing_from_watchlist(request, listing_id):
     user = request.user
     listing = Listing.objects.get(id=listing_id)
     user.items_in_watchlist.remove(listing)
+    return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))
+
+
+def bid_on_listing(request, listing_id):
+    # should i add code to delete the old bid objects??
+    user = request.user
+    print("LISTING_ID:", listing_id)
+    listing = Listing.objects.get(id=listing_id)
+    bid_amount = request.POST["bid_amount"]
+    bid = Bid(user=user, amount=bid_amount, related_listing=listing)
+    listing.current_price = bid_amount
+    listing.current_bid = bid
+    bid.save()
+    listing.save()
     return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))

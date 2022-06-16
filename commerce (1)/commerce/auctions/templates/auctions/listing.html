@@ -1,0 +1,38 @@
+{% extends "auctions/layout.html" %}
+
+
+
+
+{% block body%}
+    <h2> {{listing.title}}</a> </h2>
+    <h5> {{listing.category}} </h5>
+    <h5> {{listing.current_bid.amount}} </h5>
+    <img src="{{listing.image_url}}">
+    <p> {{listing.description}} </p>
+
+    {% if in_watchlist %}
+        <form action="/listings/{{listing.id}}/remove" method="POST">
+            {% csrf_token %}
+            <button type="submit">Remove from Watchlist</button>
+        </form>
+    {% else %}
+        <form action="/listings/{{listing.id}}/add" method="POST">
+            {% csrf_token %}
+            <button type="submit">Add to Watchlist</button>
+        </form>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        <form action="/listings/{{listing.id}}/bid" method="POST">
+            {% csrf_token %}
+            <label for="bid_amount">Bid amount: </label>
+            <input type="number" min="{{listing.current_price}}" max=999999999 name="bid_amount" required>
+            <button type="submit">Place bid</button>
+        </form>
+    {% endif %}
+
+
+    
+
+
+{% endblock %}
