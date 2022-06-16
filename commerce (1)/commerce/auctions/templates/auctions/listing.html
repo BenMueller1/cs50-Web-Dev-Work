@@ -11,33 +11,52 @@
     <p> {{listing.description}} </p>
 
     {% if listing.active %}
-        {% if in_watchlist %}
-            <form action="/listings/{{listing.id}}/remove" method="POST">
-                {% csrf_token %}
-                <button type="submit">Remove from Watchlist</button>
-            </form>
-        {% else %}
-            <form action="/listings/{{listing.id}}/add" method="POST">
-                {% csrf_token %}
-                <button type="submit">Add to Watchlist</button>
-            </form>
-        {% endif %}
+        
 
         {% if user.is_authenticated %}
+            {% if in_watchlist %}
+                <form action="/listings/{{listing.id}}/remove" method="POST">
+                    {% csrf_token %}
+                    <button type="submit">Remove from Watchlist</button>
+                </form>
+            {% else %}
+                <form action="/listings/{{listing.id}}/add" method="POST">
+                    {% csrf_token %}
+                    <button type="submit">Add to Watchlist</button>
+                </form>
+            {% endif %}
+
             <form action="/listings/{{listing.id}}/bid" method="POST">
                 {% csrf_token %}
                 <label for="bid_amount">Bid amount: </label>
                 <input type="number" min="{{listing.current_price}}" max=999999999 name="bid_amount" required>
                 <button type="submit">Place bid</button>
             </form>
-        {% endif %}
 
-        {% if user == listing.creator %}
+            {% if user == listing.creator %}
             <form action="/listings/{{listing.id}}/close" method="POST">
                 {% csrf_token %}
                 <button type="submit">Close Listing</button>
             </form>
+            {% endif %}
+
+            <form action="/listings/{{listing.id}}/addComment" method="POST">
+                {% csrf_token %}
+                <label for="comment_text">Add comment: </label>
+                <input type="text" name="comment_text" required>
+                <input type="submit" value="Publish Comment">
+            </form>
+
         {% endif %}
+
+        <ul>
+            {% for comment in comments %}
+                <li>
+                    {{comment.user}} ({{comment.posted_datetime}}): {{comment.text}}   
+                </li>
+            {% endfor %}
+        </ul>
+
     {% else %}
         <h2>Listing is closed</h2>
         {% if user == listing.winner %}

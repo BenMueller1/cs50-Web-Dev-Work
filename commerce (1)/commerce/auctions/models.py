@@ -30,3 +30,4 @@ class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
     text = models.TextField()
     posted_datetime = models.DateTimeField(default=datetime.now())
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="comments", null=True, default=None)

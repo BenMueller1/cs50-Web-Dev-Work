@@ -102,11 +102,12 @@ def create_listing_view(request):
 def listing(request, listing_id):
     user = request.user
     listing = Listing.objects.get(id=listing_id)
+    comments = listing.comments.all()
     if listing in user.items_in_watchlist.all():
         in_watchlist = True
     else:
         in_watchlist = False
-    return render(request, "auctions/listing.html", {"listing":listing, "in_watchlist":in_watchlist, "user":user})
+    return render(request, "auctions/listing.html", {"listing":listing, "in_watchlist":in_watchlist, "user":user, "comments":comments})
 
 
 def add_listing_to_watchlist(request, listing_id):
@@ -142,4 +143,13 @@ def close_listing(request, listing_id):
     listing.active = False
     listing.winner = listing.current_bid.user
     listing.save()
+    return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))
+
+
+def add_comment(request, listing_id):
+    listing = Listing.objects.get(id=listing_id)
+    user = request.user
+    text = request.POST["comment_text"]
+    comment = Comment(user=user, text=text, listing=listing)
+    comment.save()
     return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))
