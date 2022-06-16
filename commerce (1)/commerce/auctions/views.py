@@ -135,3 +135,11 @@ def bid_on_listing(request, listing_id):
     bid.save()
     listing.save()
     return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))
+
+
+def close_listing(request, listing_id):
+    listing = Listing.objects.get(id=listing_id)
+    listing.active = False
+    listing.winner = listing.current_bid.user
+    listing.save()
+    return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))

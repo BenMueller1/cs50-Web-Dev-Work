@@ -10,29 +10,41 @@
     <img src="{{listing.image_url}}">
     <p> {{listing.description}} </p>
 
-    {% if in_watchlist %}
-        <form action="/listings/{{listing.id}}/remove" method="POST">
-            {% csrf_token %}
-            <button type="submit">Remove from Watchlist</button>
-        </form>
+    {% if listing.active %}
+        {% if in_watchlist %}
+            <form action="/listings/{{listing.id}}/remove" method="POST">
+                {% csrf_token %}
+                <button type="submit">Remove from Watchlist</button>
+            </form>
+        {% else %}
+            <form action="/listings/{{listing.id}}/add" method="POST">
+                {% csrf_token %}
+                <button type="submit">Add to Watchlist</button>
+            </form>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+            <form action="/listings/{{listing.id}}/bid" method="POST">
+                {% csrf_token %}
+                <label for="bid_amount">Bid amount: </label>
+                <input type="number" min="{{listing.current_price}}" max=999999999 name="bid_amount" required>
+                <button type="submit">Place bid</button>
+            </form>
+        {% endif %}
+
+        {% if user == listing.creator %}
+            <form action="/listings/{{listing.id}}/close" method="POST">
+                {% csrf_token %}
+                <button type="submit">Close Listing</button>
+            </form>
+        {% endif %}
     {% else %}
-        <form action="/listings/{{listing.id}}/add" method="POST">
-            {% csrf_token %}
-            <button type="submit">Add to Watchlist</button>
-        </form>
+        <h2>Listing is closed</h2>
+        {% if user == listing.winner %}
+            <h5>YOU WON, NICE!!!!</h5>
+        {% else %}
+            <h5>you're a loser :/</h5>
+        {% endif %}
     {% endif %}
-
-    {% if user.is_authenticated %}
-        <form action="/listings/{{listing.id}}/bid" method="POST">
-            {% csrf_token %}
-            <label for="bid_amount">Bid amount: </label>
-            <input type="number" min="{{listing.current_price}}" max=999999999 name="bid_amount" required>
-            <button type="submit">Place bid</button>
-        </form>
-    {% endif %}
-
-
-    
-
 
 {% endblock %}

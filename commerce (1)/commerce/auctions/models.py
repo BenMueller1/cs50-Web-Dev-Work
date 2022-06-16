@@ -11,6 +11,7 @@ class Listing(models.Model):
     active = models.BooleanField(default=True)
     image_url = models.URLField(default=None)  # should this be a FilePathField ?
     category = models.CharField(max_length=30, default=None)
+    winner = models.ForeignKey('User', on_delete=models.DO_NOTHING, related_name="winner", null=True, default=None)
 
 
 class User(AbstractUser):
