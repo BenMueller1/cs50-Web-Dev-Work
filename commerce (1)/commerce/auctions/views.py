@@ -130,11 +130,13 @@ def bid_on_listing(request, listing_id):
     
     listing = Listing.objects.get(id=listing_id)
     bid_amount = request.POST["bid_amount"]
-    bid = Bid(user=user, amount=bid_amount, related_listing=listing)
-    listing.current_price = bid_amount
-    listing.current_bid = bid
-    bid.save()
-    listing.save()
+    if float(bid_amount) > listing.current_bid.amount:
+        bid = Bid(user=user, amount=bid_amount, related_listing=listing)
+        listing.current_bid = bid
+        bid.save()
+        listing.save()
+    else: # bid is too small
+        return HttpResponse("Bid must be greater than the current price.")
     return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))
 
 
