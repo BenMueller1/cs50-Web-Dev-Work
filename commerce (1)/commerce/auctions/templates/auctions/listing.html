@@ -5,7 +5,7 @@
 
 {% block body%}
     <h2> {{listing.title}}</a> </h2>
-    <h5> {{listing.category}} </h5>
+    <h5> {{listing.category.name}} </h5>
     <h5> {{listing.current_bid.amount}} </h5>
     <img src="{{listing.image_url}}">
     <p> {{listing.description}} </p>

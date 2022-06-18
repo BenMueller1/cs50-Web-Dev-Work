@@ -10,14 +10,14 @@ class Listing(models.Model):
     current_bid = models.OneToOneField('Bid', on_delete=models.CASCADE, related_name="listing", null=True)
     active = models.BooleanField(default=True)
     image_url = models.URLField(default=None)  # should this be a FilePathField ?
-    category = models.CharField(max_length=30, default=None)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name="items", null=True)
+    # category = models.CharField(max_length=30, default=None)
     winner = models.ForeignKey('User', on_delete=models.DO_NOTHING, related_name="winner", null=True, default=None)
 
 
 class User(AbstractUser):
     ''' since this inherits from AbstractUser, it already has field for username, email, password, etc.'''
     items_in_watchlist = models.ManyToManyField(Listing, blank=True)
-    pass
 
 
 class Bid(models.Model):
@@ -31,3 +31,6 @@ class Comment(models.Model):
     text = models.TextField()
     posted_datetime = models.DateTimeField(default=datetime.now())
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="comments", null=True, default=None)
+
+class Category(models.Model):
+    name = models.CharField(max_length=64)

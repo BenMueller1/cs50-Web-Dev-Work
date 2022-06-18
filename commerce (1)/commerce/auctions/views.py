@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 
-from .models import User, Listing, Bid, Comment
+from .models import User, Listing, Bid, Comment, Category
 
 
 class CreateListingForm(forms.Form):
@@ -87,7 +87,9 @@ def create_listing_view(request):
         else:
             image_url = None
         if "category" in request.POST.keys():
-            category = request.POST["category"]
+            category = Category(name=request.POST["category"])
+            category.save()
+            # category = request.POST["category"]
         else:
             category = None
 
@@ -102,7 +104,7 @@ def create_listing_view(request):
 def listing(request, listing_id):
     user = request.user
     listing = Listing.objects.get(id=listing_id)
-    comments = listing.comments.all()
+    comments = reversed(listing.comments.all())  # reversed so that most recent comments are on top
     if listing in user.items_in_watchlist.all():
         in_watchlist = True
     else:
@@ -155,3 +157,9 @@ def add_comment(request, listing_id):
     comment = Comment(user=user, text=text, listing=listing)
     comment.save()
     return HttpResponseRedirect(reverse("listing", kwargs={'listing_id':listing_id}))
+
+
+def watchlist(request):
+    user = request.user
+    watchlist_items = user.items_in_watchlist.all()
+    return render(request, "auctions/watchlist.html", {"watchlist_items": watchlist_items})
