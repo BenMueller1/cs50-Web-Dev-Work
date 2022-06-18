@@ -1,0 +1,14 @@
+{% extends "auctions/layout.html" %}
+
+
+
+{% block body %}
+    <ul>
+        <h2> {{name}} </h2>
+        {% for item in items%}
+        <li>
+            <h3><a href="../listings/{{item.id}}"><strong>{{ item.title }}</strong></a>, current price: {{item.current_bid.amount}}</h3>
+        </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

@@ -87,8 +87,11 @@ def create_listing_view(request):
         else:
             image_url = None
         if "category" in request.POST.keys():
-            category = Category(name=request.POST["category"])
-            category.save()
+            if request.POST["category"] not in [cat.name for cat in Category.objects.all()]:  # if this is a new category
+                category = Category(name=request.POST["category"])
+                category.save()
+            else: # if this category has already been made
+                category = Category.objects.get(name=request.POST["category"])
             # category = request.POST["category"]
         else:
             category = None
@@ -163,3 +166,15 @@ def watchlist(request):
     user = request.user
     watchlist_items = user.items_in_watchlist.all()
     return render(request, "auctions/watchlist.html", {"watchlist_items": watchlist_items})
+
+
+def categories(request):
+    categories = Category.objects.all()
+    return render(request, "auctions/categories.html", {"categories": categories})
+
+
+def all_items_in_category(request, category_id):
+    category = Category.objects.get(id=category_id)
+    name = category.name
+    items = category.items.all()
+    return render(request, "auctions/all_items_in_category.html", {"items":items, "name":name})
