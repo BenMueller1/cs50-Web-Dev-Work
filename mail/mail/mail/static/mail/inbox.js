@@ -1,15 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
 
   // Use buttons to toggle between views
-  document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
-  document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
-  document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
-  document.querySelector('#compose').addEventListener('click', compose_email);
+  document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox', true));
+  document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent', true));
+  document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive', true));
+  document.querySelector('#compose').addEventListener('click', () => compose_email(true));
 
   document.querySelector('#submit_email').addEventListener('click', send_email);
 
   // By default, load the inbox
-  load_mailbox('inbox');
+  load_mailbox('inbox', true);
 });
 
 
@@ -23,10 +23,12 @@ function send_email()  {
       body: document.querySelector('#compose-body').value
     })
   })
-  .then(response => load_mailbox('sent'))
+  .then(response => load_mailbox('sent', true))
 }
 
-function compose_email() {
+// push_history is a boolean that tells us if we should push this state to the history or not
+// if we have hit the back arrow to get to the current page, we don't want to push it to history (would create infinite loop)
+function compose_email(push_history) {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
@@ -37,9 +39,14 @@ function compose_email() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
+
+  if(push_history) {
+    history.pushState({"page": "compose", "email":null}, "", "");
+  }
+  
 }
 
-function load_mailbox(mailbox) {
+function load_mailbox(mailbox, push_history) {
   // need to add to this, make a GET request to load the data for the appropriate mailbox, then add html elements (implement infinite scroll)
   // in order to show all of the emails
   
@@ -68,13 +75,18 @@ function load_mailbox(mailbox) {
           d.style.background = "white";
         }
         emailView.append(d)
-        document.querySelector(`#button-${email['id']}`).addEventListener('click', () => view_email(email, mailbox));
+        document.querySelector(`#button-${email['id']}`).addEventListener('click', () => view_email(email, mailbox, true));
       })
   })
+  if(push_history) {
+    history.pushState({"page": mailbox, "email":null}, "", "");
+  }
+  
+
 }
 
 
-function view_email(email, mailbox) {
+function view_email(email, mailbox, push_history) {
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#view-email').style.display = 'block';
@@ -108,13 +120,14 @@ function view_email(email, mailbox) {
 
     // reply button
     e.innerHTML += `<button id="reply-${email['id']}"> Reply </button>`
-    document.querySelector(`#reply-${email['id']}`).addEventListener('click', () => reply(email));
+    document.querySelector(`#reply-${email['id']}`).addEventListener('click', () => reply(email, true));
   }
   
+  history.pushState({"page": "view_email", "email":email}, "", "");
 }
 
 
-function reply(email) {
+function reply(email, push_history) {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
@@ -129,6 +142,10 @@ function reply(email) {
   if (sub.slice(0,8) === "Re: Re: ") {
     document.querySelector('#compose-subject').value = sub.slice(4);
   }
+
+  if(push_history) {
+    history.pushState({"page": "reply", "email":email}, "", "");
+  }
   
 }
 
@@ -140,6 +157,35 @@ function archive(email, bool) {
       archived: bool
     })   
   })
-  load_mailbox('inbox');
+  load_mailbox('inbox', true);
 }
 
+
+window.onpopstate = function(event) {
+  // console.log('is it called?')
+  // console.log(event.state)
+  // console.log(event.state['page'])
+  console.log(history)
+  // event.state will hold the data we pass (page could be inbox, sent, archive, compose, view_email, or reply) (email could be an email or null)
+  // this data should tell us what page we should load
+  switch(event.state['page']) {  // do I need to use breacket notation?
+    case "inbox":
+      load_mailbox('inbox', false);
+      break;
+    case "sent":
+      load_mailbox('sent', false);
+      break;
+    case "archive":
+      load_mailbox('archive', false);
+      break;
+    case "compose":
+      compose_email(false);
+      break;
+    case "view_email":
+      view_email(event.state['email'], event.state['page'], false);
+      break;
+    case "reply":
+      reply(event.state.email, false);
+      break;
+  }
+}
