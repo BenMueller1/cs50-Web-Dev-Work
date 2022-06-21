@@ -95,7 +95,7 @@ function view_email(email, mailbox) {
   
   viewEmail.append(e)
 
-  // if mailbox === "inbox", we want to give user the option to archive / unarchive email
+  // if mailbox === "inbox", we want to give user the option to archive / unarchive email and the option to reply
   if (mailbox !== "sent") {
     if (email['archived']) {
       e.innerHTML += `<button id="unarchive-${email['id']}"> Unarchive </button>`;
@@ -105,6 +105,29 @@ function view_email(email, mailbox) {
       e.innerHTML += `<button id="archive-${email['id']}"> Archive </button>`;
       document.querySelector(`#archive-${email['id']}`).addEventListener('click', () => archive(email, true));
     }
+
+    // reply button
+    e.innerHTML += `<button id="reply-${email['id']}"> Reply </button>`
+    document.querySelector(`#reply-${email['id']}`).addEventListener('click', () => reply(email));
+  }
+  
+}
+
+
+function reply(email) {
+  // Show compose view and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#view-email').style.display = 'none';
+
+  // Autofill composition fields
+  document.querySelector('#compose-recipients').value = `${email['sender']}`;
+  document.querySelector('#compose-subject').value = `Re: ${email['subject']}`;
+  document.querySelector('#compose-body').value = `On Jan 1 2020, 12:00 AM ${email['sender']} wrote: ${email['body']}`;
+  // avoiding "Re: Re: " if we have a reply to a reply
+  let sub = document.querySelector('#compose-subject').value
+  if (sub.slice(0,8) === "Re: Re: ") {
+    document.querySelector('#compose-subject').value = sub.slice(4);
   }
   
 }
