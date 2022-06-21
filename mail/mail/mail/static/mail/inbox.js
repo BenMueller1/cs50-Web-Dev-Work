@@ -31,6 +31,7 @@ function compose_email() {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#view-email').style.display = 'none';
 
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
@@ -45,28 +46,54 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#view-email').style.display = 'none';
   emailView = document.querySelector('#emails-view') 
 
+  // Show the mailbox name
+  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  // get all emails in mailbox
   fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {
       emails.forEach((email) => {
-        console.log(email)
+        //console.log(email)
         let d = document.createElement('div');
         d.id = `email-${email["id"]}`
-        d.innerHTML = `<p>From: ${email["sender"]}, Subject: ${email["subject"]}, Timestamp: ${email["timestamp"]} </p>`;
-        console.log(d)
+        d.innerHTML = `<p>From: ${email["sender"]}, Subject: ${email["subject"]}, Timestamp: ${email["timestamp"]} <button id="button-${email['id']}">View</button> </p>`;
         if (email["read"]) {
           d.style.background = "grey";
         }
         else {
           d.style.background = "white";
         }
-
         emailView.append(d)
+        document.querySelector(`#button-${email['id']}`).addEventListener('click', () => view_email(email, mailbox));
       })
   })
+}
 
-  // Show the mailbox name
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+function view_email(email, mailbox) {
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#view-email').style.display = 'block';
+  viewEmail = document.querySelector('#view-email');
+  viewEmail.innerHTML = "";
+
+  // mark email as read
+  fetch(`emails/${email['id']}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      read: true
+    })
+  })
+
+  let e = document.createElement('div');
+  e.innerHTML = `<p>From: ${email["sender"]}, To: ${email["recipients"]}, Subject: ${email["subject"]}, Timestamp: ${email["timestamp"]}, Body: ${email["body"]}</p>`
+  viewEmail.append(e)
+
+
+  // if mailbox === "inbox", we want to give user the option to archive / unarchive email
+
 }
