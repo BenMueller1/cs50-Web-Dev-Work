@@ -45,12 +45,26 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  emailView = document.querySelector('#emails-view') 
 
   fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {
-     // for each email, need to append a div countaining information about the email to #email-view
+      emails.forEach((email) => {
+        console.log(email)
+        let d = document.createElement('div');
+        d.id = `email-${email["id"]}`
+        d.innerHTML = `<p>From: ${email["sender"]}, Subject: ${email["subject"]}, Timestamp: ${email["timestamp"]} </p>`;
+        console.log(d)
+        if (email["read"]) {
+          d.style.background = "grey";
+        }
+        else {
+          d.style.background = "white";
+        }
 
+        emailView.append(d)
+      })
   })
 
   // Show the mailbox name
