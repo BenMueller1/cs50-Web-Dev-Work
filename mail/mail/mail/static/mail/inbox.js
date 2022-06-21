@@ -90,10 +90,33 @@ function view_email(email, mailbox) {
   })
 
   let e = document.createElement('div');
-  e.innerHTML = `<p>From: ${email["sender"]}, To: ${email["recipients"]}, Subject: ${email["subject"]}, Timestamp: ${email["timestamp"]}, Body: ${email["body"]}</p>`
+  e.innerHTML = `<p>From: ${email["sender"]}, To: ${email["recipients"]}, Subject: ${email["subject"]}, 
+    Timestamp: ${email["timestamp"]}, Body: ${email["body"]}</p>`
+  
   viewEmail.append(e)
 
-
   // if mailbox === "inbox", we want to give user the option to archive / unarchive email
-
+  if (mailbox !== "sent") {
+    if (email['archived']) {
+      e.innerHTML += `<button id="unarchive-${email['id']}"> Unarchive </button>`;
+      document.querySelector(`#unarchive-${email['id']}`).addEventListener('click', () => archive(email, false));
+    }
+    else {
+      e.innerHTML += `<button id="archive-${email['id']}"> Archive </button>`;
+      document.querySelector(`#archive-${email['id']}`).addEventListener('click', () => archive(email, true));
+    }
+  }
+  
 }
+
+
+function archive(email, bool) {
+  fetch(`/emails/${email['id']}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      archived: bool
+    })   
+  })
+  load_mailbox('inbox');
+}
+
